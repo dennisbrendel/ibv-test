@@ -4,6 +4,7 @@
 #include <infiniband/verbs.h>
 
 struct ibv_device **ib_devices = NULL;
+struct ibv_context *ib_context = NULL;
 
 int init_device(int dev_id) {
   int num_devices = 0;
@@ -35,6 +36,16 @@ int init_device(int dev_id) {
   return 0;
 }
 
+int open_device(int dev_id) {
+  ib_context = ibv_open_device(ib_devices[dev_id]);
+  if (ib_context == NULL) {
+    perror("Failed to open IB device");
+    return 1;
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int res = 0;
   int dev_id = 0;
@@ -48,7 +59,18 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Failed to initialize\n");
   }
 
+  res = open_device(dev_id);
+  if (res != 0) {
+    fprintf(stderr, "Failed to open devices\n");
+  }
+
   ibv_free_device_list(ib_devices);
+  if (ib_context != NULL) {
+    res = ibv_close_device(ib_context);
+    if (res != 0) {
+      return 1;
+    }
+  }
 
   return 0;
 }
