@@ -6,6 +6,7 @@
 struct ibv_device **ib_devices = NULL;
 struct ibv_context *ib_context = NULL;
 struct ibv_pd *ib_pd = NULL;
+void *mem_buf = NULL;
 
 int init_device(int dev_id) {
   int num_devices = 0;
@@ -81,6 +82,7 @@ int cleanup() {
 int main(int argc, char *argv[]) {
   int res = 0;
   int dev_id = 0;
+  unsigned long mem_size = 1024 * 1024 * 1024;
 
   if (argc > 1) {
     dev_id = atoi(argv[1]);
@@ -105,6 +107,13 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Failed to allocate protection domain\n");
     cleanup();
     exit(res);
+  }
+
+  mem_buf = malloc(mem_size);
+  if (mem_buf == NULL) {
+    fprintf(stderr, "Failed to allocate local memory\n");
+    cleanup();
+    exit(EXIT_FAILURE);
   }
 
   return 0;
