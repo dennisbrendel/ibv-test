@@ -9,7 +9,7 @@ struct ibv_pd *ib_pd = NULL;
 struct ibv_mr *ib_mr = NULL;
 void *mem_buf = NULL;
 
-int init_device(int dev_id) {
+int init_device(int *dev_id) {
   int num_devices = 0;
 
   ib_devices = ibv_get_device_list(&num_devices);
@@ -28,13 +28,13 @@ int init_device(int dev_id) {
            i,  ibv_get_device_name(ib_devices[i]));
   }
 
-  if (dev_id > num_devices - 1) {
+  if (*dev_id > num_devices - 1) {
     fprintf(stderr, "Failed to use device with ID %d, falling back to %d\n",
-                    dev_id, num_devices - 1);
-    dev_id = num_devices - 1;
+                    *dev_id, num_devices - 1);
+    *dev_id = num_devices - 1;
   }
 
-  printf("Using IB device with ID %d\n", dev_id);
+  printf("Using IB device with ID %d\n", *dev_id);
 
   return 0;
 }
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     mem_size = atol(argv[2]) * 1024 * 1024 * 1024;
   }
 
-  res = init_device(dev_id);
+  res = init_device(&dev_id);
   if (res != 0) {
     fprintf(stderr, "Failed to initialize\n");
     cleanup();
