@@ -57,28 +57,8 @@ int alloc_pd() {
   return 0;
 }
 
-int main(int argc, char *argv[]) {
+int cleanup() {
   int res = 0;
-  int dev_id = 0;
-
-  if (argc > 1) {
-    dev_id = atoi(argv[1]);
-  }
-
-  res = init_device(dev_id);
-  if (res != 0) {
-    fprintf(stderr, "Failed to initialize\n");
-  }
-
-  res = open_device(dev_id);
-  if (res != 0) {
-    fprintf(stderr, "Failed to open devices\n");
-  }
-
-  res = alloc_pd();
-  if (res != 0) {
-    fprintf(stderr, "Failed to allocate protection domain\n");
-  }
 
   if (ib_pd != NULL) {
     res = ibv_dealloc_pd(ib_pd);
@@ -93,6 +73,38 @@ int main(int argc, char *argv[]) {
     if (res != 0) {
       return 1;
     }
+  }
+
+  return 0;
+}
+
+int main(int argc, char *argv[]) {
+  int res = 0;
+  int dev_id = 0;
+
+  if (argc > 1) {
+    dev_id = atoi(argv[1]);
+  }
+
+  res = init_device(dev_id);
+  if (res != 0) {
+    fprintf(stderr, "Failed to initialize\n");
+    cleanup();
+    exit(res);
+  }
+
+  res = open_device(dev_id);
+  if (res != 0) {
+    fprintf(stderr, "Failed to open devices\n");
+    cleanup();
+    exit(res);
+  }
+
+  res = alloc_pd();
+  if (res != 0) {
+    fprintf(stderr, "Failed to allocate protection domain\n");
+    cleanup();
+    exit(res);
   }
 
   return 0;
