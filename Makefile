@@ -1,4 +1,4 @@
-CFLAGS := -Wall -g -O0
+CFLAGS := -Wall -g -O0 -std=c99
 LDFLAGS := -libverbs
 
 EXEC := ibv_reg_mem_reg
