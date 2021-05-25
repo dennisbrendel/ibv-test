@@ -6,6 +6,7 @@
 struct ibv_device **ib_devices = NULL;
 struct ibv_context *ib_context = NULL;
 struct ibv_pd *ib_pd = NULL;
+struct ibv_mr *ib_mr = NULL;
 void *mem_buf = NULL;
 
 int init_device(int dev_id) {
@@ -58,8 +59,39 @@ int alloc_pd() {
   return 0;
 }
 
+int reg_mem_reg(unsigned long len) {
+  printf("Trying to register memory region..");
+
+  ib_mr = ibv_reg_mr(ib_pd, mem_buf, len,
+               IBV_ACCESS_REMOTE_WRITE | IBV_ACCESS_LOCAL_WRITE |
+               IBV_ACCESS_REMOTE_READ | IBV_ACCESS_REMOTE_ATOMIC);
+  if (ib_mr == NULL) {
+    perror("Failed to register memory region");
+    return 1;
+  }
+  printf(" success\n");
+
+  return 0;
+}
+
 int cleanup() {
   int res = 0;
+
+  if (ib_mr != NULL) {
+    printf("Trying to deregister memory region..");
+    res = ibv_dereg_mr(ib_mr);
+    if (res != 0) {
+      perror("Failed to deregister memory region");
+      return 8;
+    }
+    printf(" success\n");
+  }
+
+  if (mem_buf != NULL) {
+    printf("Freeing allocated memory..");
+    free(mem_buf);
+    printf(" done\n");
+  }
 
   if (ib_pd != NULL) {
     res = ibv_dealloc_pd(ib_pd);
@@ -117,6 +149,19 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Failed to allocate local memory\n");
     cleanup();
     exit(EXIT_FAILURE);
+  }
+
+  res = reg_mem_reg(mem_size);
+  if (res != 0) {
+    fprintf(stderr, "Failed to register memory region\n");
+    cleanup();
+    exit(res);
+  }
+
+  res = cleanup();
+  if (res != 0) {
+    fprintf(stderr, "Failed to clean up\n");
+    exit(res);
   }
 
   return 0;
