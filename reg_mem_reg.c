@@ -5,7 +5,7 @@
 
 struct ibv_device **ib_devices = NULL;
 
-int init(int dev_id) {
+int init_device(int dev_id) {
   int num_devices = 0;
 
   ib_devices = ibv_get_device_list(&num_devices);
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     dev_id = atoi(argv[1]);
   }
 
-  res = init(dev_id);
+  res = init_device(dev_id);
   if (res != 0) {
     fprintf(stderr, "Failed to initialize\n");
   }
