@@ -12,9 +12,17 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  ibv_free_device_list(ib_devices);
+  if (num_devices == 0) {
+    fprintf(stderr, "No IB devices detected!\n");
+    return 1;
+  }
 
-  printf("Found %d IB devices\n", num_devices);
+  for (int i = 0; i < num_devices; i++) {
+    printf("Found IB device with ID %d: %s\n",
+           i,  ibv_get_device_name(ib_devices[i]));
+  }
+
+  ibv_free_device_list(ib_devices);
 
   return 0;
 }
