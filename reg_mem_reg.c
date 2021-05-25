@@ -5,6 +5,7 @@
 
 struct ibv_device **ib_devices = NULL;
 struct ibv_context *ib_context = NULL;
+struct ibv_pd *ib_pd = NULL;
 
 int init_device(int dev_id) {
   int num_devices = 0;
@@ -46,6 +47,16 @@ int open_device(int dev_id) {
   return 0;
 }
 
+int alloc_pd() {
+  ib_pd = ibv_alloc_pd(ib_context);
+  if (ib_pd == NULL) {
+    perror("Failed to allocate protection domain");
+    return 1;
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int res = 0;
   int dev_id = 0;
@@ -62,6 +73,18 @@ int main(int argc, char *argv[]) {
   res = open_device(dev_id);
   if (res != 0) {
     fprintf(stderr, "Failed to open devices\n");
+  }
+
+  res = alloc_pd();
+  if (res != 0) {
+    fprintf(stderr, "Failed to allocate protection domain\n");
+  }
+
+  if (ib_pd != NULL) {
+    res = ibv_dealloc_pd(ib_pd);
+    if (res != 0) {
+      perror("Failed to deallocate protection domain");
+    }
   }
 
   ibv_free_device_list(ib_devices);
