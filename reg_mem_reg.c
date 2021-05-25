@@ -87,6 +87,9 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     dev_id = atoi(argv[1]);
   }
+  if (argc > 2) {
+    mem_size = atol(argv[2]) * 1024 * 1024 * 1024;
+  }
 
   res = init_device(dev_id);
   if (res != 0) {
